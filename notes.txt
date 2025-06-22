@@ -1,0 +1,4 @@
+//init everything
+//check overflow with atoi
+//create the threads and mutexes
+//start simulation 
