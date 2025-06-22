@@ -18,6 +18,7 @@ typedef struct s_philo
 
 typedef struct s_all_data
 {
+	int				index;
 	int				n_philo;
 	long			t_t_die;
 	long			t_t_eat;
