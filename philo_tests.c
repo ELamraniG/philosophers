@@ -22,17 +22,17 @@ void	func1(void *arg)
 		t_all_data *all_data;
 		int i;
 
-	{
 		all_data = (t_all_data *)arg;
 		i = 0;
-	}
+
 }
 
 void	monitor_everything(void *arg)
 {
 	t_all_data	*all_data;
-
 	all_data = (t_all_data *)arg;
+	int first_index;
+
 }
 
 void	init_everything(t_all_data *all_data)
@@ -40,15 +40,26 @@ void	init_everything(t_all_data *all_data)
 	int	i;
 
 	all_data->forks = malloc(sizeof(pthread_mutex_t) * all_data->n_philo);
+	pthread_mutex_init(&all_data->printing, NULL);
+	pthread_mutex_init(&all_data->dead_lock, NULL);
 	i = 0;
 	while (i < all_data->n_philo)
 	{
+		all_data->index = i;
 		pthread_mutex_init(&all_data->forks[i], NULL);
-		thread_create(all_data->philos[i].th, NULL, &func1, all_data);
 		i++;
 	}
-	pthread_mutex_init(&all_data->printing, NULL);
-	pthread_mutex_init(&all_data->dead_lock, NULL);
+
+
+
+
+	i = 0;
+	while (i < all_data->n_philo)
+	{
+		pthread_create(all_data->philos[i].th, NULL, &func1, all_data);		
+		i++;
+	}
+
 }
 
 int	main(int ac, char **av)
