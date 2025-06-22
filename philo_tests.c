@@ -17,19 +17,22 @@ int	check_data(int ac, char **av, t_all_data *philos)
 	return (1);
 }
 
-void	func1(void)
+void	func1(void *arg)
 {
-	int	i;
+		t_all_data *all_data;
+		int i;
 
-	i = 0;
+	{
+		all_data = (t_all_data *)arg;
+		i = 0;
+	}
 }
 
-void monitor_everything(void *arg)
+void	monitor_everything(void *arg)
 {
-	t_all_data *all_data;
+	t_all_data	*all_data;
 
 	all_data = (t_all_data *)arg;
-	
 }
 
 void	init_everything(t_all_data *all_data)
@@ -41,7 +44,7 @@ void	init_everything(t_all_data *all_data)
 	while (i < all_data->n_philo)
 	{
 		pthread_mutex_init(&all_data->forks[i], NULL);
-		thread_create(all_data->philos[i].th, NULL, func1, all_data);
+		thread_create(all_data->philos[i].th, NULL, &func1, all_data);
 		i++;
 	}
 	pthread_mutex_init(&all_data->printing, NULL);
@@ -52,9 +55,20 @@ int	main(int ac, char **av)
 {
 	t_all_data	all_data;
 	t_philo		philos[256];
+	pthread_t	monitor;
+	int			i;
+
+	i = 0;
 	all_data.philos = philos;
 	if (check_data(ac, av, &all_data) == 1)
 		return (1);
 	init_everything(&all_data);
+	thread_create(monitor, NULL, &monitor_everything, all_data);
+	while (i < all_data.n_philo)
+	{
+		pthread_join(&all_data.philos[i], NULL);
+		i++;
+	}
+	pthread_join(&monitor, NULL);
 	return (0);
 }
