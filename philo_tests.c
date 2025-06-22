@@ -21,9 +21,14 @@ void	func1(void *arg)
 {
 		t_all_data *all_data;
 		int i;
+		int right = all_data->index + 1;
 
 		all_data = (t_all_data *)arg;
 		i = 0;
+		if (all_data->index == all_data->n_philo - 1)
+			right = 0;
+		pthread_mutex_lock(&all_data->forks[all_data->index]);
+		pthread_mutex_lock(&all_data->forks[right]);
 
 }
 
@@ -49,7 +54,6 @@ void	init_everything(t_all_data *all_data)
 		pthread_mutex_init(&all_data->forks[i], NULL);
 		i++;
 	}
-
 
 
 
