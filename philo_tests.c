@@ -1,55 +1,60 @@
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
-struct				lopo
+#include "threads.h"
+
+int	check_data(int ac, char **av, t_all_data *philos)
 {
-	pthread_mutex_t	lock;
-};
-int					a = 0;
-void	*func1(void *args)
+	if (ac != 5 && ac != 6)
+	{
+		printf("error in the number of args");
+		return (1);
+	}
+	// change atoi to ft atoi
+	philos->n_philo = atoi(av[1]);
+	philos->t_t_die = atoi(av[2]);
+	philos->t_t_eat = atoi(av[3]);
+	philos->t_t_sleep = atoi(av[4]);
+	// do this later if (ac == 6)
+	return (1);
+}
+
+void	func1(void)
 {
 	int	i;
 
 	i = 0;
-	pthread_mutex_lock(&((struct lopo *)args)->lock);
-	while (i < 500)
-	{
-		printf("%d\n", i++);
-	}
-	pthread_mutex_unlock(&((struct lopo *)args)->lock);
-	return (NULL);
 }
 
-void	*func2(void *args)
+void monitor_everything(void *arg)
+{
+	t_all_data *all_data;
+
+	all_data = (t_all_data *)arg;
+	
+}
+
+void	init_everything(t_all_data *all_data)
 {
 	int	i;
 
+	all_data->forks = malloc(sizeof(pthread_mutex_t) * all_data->n_philo);
 	i = 0;
-	i = 0;
-	pthread_mutex_lock(&((struct lopo *)args)->lock);
-	while (i < 500)	
+	while (i < all_data->n_philo)
 	{
-		printf("%d\n", i++);
+		pthread_mutex_init(&all_data->forks[i], NULL);
+		thread_create(all_data->philos[i].th, NULL, func1, all_data);
+		i++;
 	}
-	pthread_mutex_unlock(&((struct lopo *)args)->lock);
-	return (NULL);
+	pthread_mutex_init(&all_data->printing, NULL);
+	pthread_mutex_init(&all_data->dead_lock, NULL);
 }
 
-int	main(void)
+int	main(int ac, char **av)
 {
-	pthread_t	lopo1;
-	pthread_t	lopo2;
-	struct lopo	*sopo1;
-
-	sopo1 = malloc(sizeof(struct lopo));
-	pthread_mutex_init(&sopo1->lock, NULL);
-	pthread_create(&lopo1, NULL, func1, sopo1);
-	pthread_create(&lopo2, NULL, func2, sopo1);
-	pthread_join(lopo1, NULL);
-	pthread_join(lopo2, NULL);
-	pthread_mutex_destroy(&sopo1->lock);
-	free(sopo1);
+	t_all_data	all_data;
+	t_philo		philos[256];
+	all_data.philos = philos;
+	if (check_data(ac, av, &all_data) == 1)
+		return (1);
+	init_everything(&all_data);
 	return (0);
 }
