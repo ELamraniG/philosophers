@@ -1,4 +1,3 @@
-
 #include "threads.h"
 
 int	check_data(int ac, char **av, t_all_data *philos)
@@ -19,35 +18,56 @@ int	check_data(int ac, char **av, t_all_data *philos)
 
 void	*func1(void *arg)
 {
-		t_all_data *all_data;
-		int i;
+	t_philo		*philo;
+	t_all_data	*all_data;
+	int			left;
+	int			right;
+	int			i;
 
-		all_data = (t_all_data *)arg;
-		int right = all_data->index + 1;
+	philo = (t_philo *)arg;
+	all_data = philo->all_data;
+	left = philo->index;
+	right = left + 1;
+	if (left == all_data->n_philo - 1)
+		right = 0;
+	if (left % 2 == 0)
+	{
 		i = 0;
-		if (all_data->index == all_data->n_philo - 1)
-			right = 0;
-		pthread_mutex_lock(&all_data->forks[all_data->index]);
+		while (i < all_data->n_philo)
+		{
+			usleep(5);
+			i++;
+		}
+	}
+	// while (1)
+	{
+		printf("timestamp_in_ms %d is thinking\n", left);
+		pthread_mutex_lock(&all_data->forks[left]);
+		printf("timestamp_in_ms %d has taken a fork\n", left);
 		pthread_mutex_lock(&all_data->forks[right]);
-		printf("we ate \n");
-		usleep(3);
-		pthread_mutex_unlock(&all_data->forks[all_data->index]);
+		printf("timestamp_in_ms %d has taken a fork\n", left);
+		printf("timestamp_in_ms %d is eating\n", left);
+		pthread_mutex_unlock(&all_data->forks[left]);
 		pthread_mutex_unlock(&all_data->forks[right]);
-		return NULL;
-
+		printf("timestamp_in_ms %d is sleeping\n", left);
+		printf("%lu\n\n\n\n",philo->last_meal);
+		usleep(philo->all_data->t_t_sleep);
+	}
+	return (NULL);
 }
 
 void	monitor_everything(void *arg)
 {
 	t_all_data	*all_data;
-	all_data = (t_all_data *)arg;
-	int first_index;
 
+	// int			first_index;
+	all_data = (t_all_data *)arg;
 }
 
 void	init_everything(t_all_data *all_data)
 {
 	int	i;
+	struct timeval tm;
 
 	all_data->forks = malloc(sizeof(pthread_mutex_t) * all_data->n_philo);
 	pthread_mutex_init(&all_data->printing, NULL);
@@ -58,25 +78,30 @@ void	init_everything(t_all_data *all_data)
 		pthread_mutex_init(&all_data->forks[i], NULL);
 		i++;
 	}
-
-
-
 	i = 0;
 	while (i < all_data->n_philo)
 	{
-				all_data->index = i;
-		pthread_create(&all_data->philos[i].th, NULL, &func1, all_data);		
+		all_data->philos[i].index = i;
+		all_data->philos[i].all_data = all_data;
 		i++;
 	}
-
+	i = 0;
+	while (i < all_data->n_philo)
+	{
+		gettimeofday(&tm,NULL);
+		all_data->philos[i].last_meal = tm.tv_usec;
+		pthread_create(&all_data->philos[i].th, NULL, &func1,
+			&all_data->philos[i]);
+		i++;
+	}
 }
 
 int	main(int ac, char **av)
 {
-	t_all_data	all_data;
-	t_philo		philos[256];
-	pthread_t	monitor;
-	int			i;
+	t_all_data all_data;
+	t_philo philos[256];
+	// pthread_t monitor;
+	int i;
 
 	i = 0;
 	all_data.philos = philos;
