@@ -16,6 +16,13 @@ int	check_data(int ac, char **av, t_all_data *philos)
 	return (0);
 }
 
+void get_the_damn_time(t_philo *philo)
+{
+		struct timeval tm;
+		gettimeofday(&tm,NULL);
+		philo->last_meal =   (tm.tv_sec * 1000 + tm.tv_usec / 1000) - (philo->all_data->start_time);
+}
+
 void	*func1(void *arg)
 {
 	t_philo		*philo;
@@ -30,28 +37,33 @@ void	*func1(void *arg)
 	right = left + 1;
 	if (left == all_data->n_philo - 1)
 		right = 0;
-	if (left % 2 == 0)
+	i = 0;
+	while (1)
 	{
-		i = 0;
-		while (i < all_data->n_philo)
+		printf("%d is thinking\n", left);
+		if (left % 2 == 0)
 		{
-			usleep(5);
-			i++;
+			pthread_mutex_lock(&all_data->forks[left]);
+			printf("%d has taken a fork\n" ,left);
+			pthread_mutex_lock(&all_data->forks[right]);
+			printf("%d has taken a fork\n" ,left);
 		}
-	}
-	// while (1)
-	{
-		printf("timestamp_in_ms %d is thinking\n", left);
-		pthread_mutex_lock(&all_data->forks[left]);
-		printf("timestamp_in_ms %d has taken a fork\n", left);
-		pthread_mutex_lock(&all_data->forks[right]);
-		printf("timestamp_in_ms %d has taken a fork\n", left);
-		printf("timestamp_in_ms %d is eating\n", left);
+		else
+		{
+			pthread_mutex_lock(&all_data->forks[right]);
+			printf("%lu %d has taken a fork\n",philo->last_meal ,left);
+			pthread_mutex_lock(&all_data->forks[left]);
+			printf("%lu %d has taken a fork\n",philo->last_meal ,left);
+
+		}
+		get_the_damn_time(philo);
+		printf("%lu %d is eating\n",philo->last_meal, left);
 		pthread_mutex_unlock(&all_data->forks[left]);
 		pthread_mutex_unlock(&all_data->forks[right]);
-		printf("timestamp_in_ms %d is sleeping\n", left);
-		printf("%lu\n\n\n\n",philo->last_meal);
+		get_the_damn_time(philo);
+		printf("%lu %d is sleeping\n",philo->last_meal , left);
 		usleep(philo->all_data->t_t_sleep);
+		i++;
 	}
 	return (NULL);
 }
@@ -85,11 +97,12 @@ void	init_everything(t_all_data *all_data)
 		all_data->philos[i].all_data = all_data;
 		i++;
 	}
-	i = 0;
+		i = 0;
+		gettimeofday(&tm,NULL);
+		all_data->start_time = tm.tv_sec * 1000 + tm.tv_usec / 1000;
 	while (i < all_data->n_philo)
 	{
-		gettimeofday(&tm,NULL);
-		all_data->philos[i].last_meal = tm.tv_usec;
+		all_data->philos[i].last_meal = 0;
 		pthread_create(&all_data->philos[i].th, NULL, &func1,
 			&all_data->philos[i]);
 		i++;
