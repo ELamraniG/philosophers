@@ -6,19 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+ #include <sys/time.h>
 
-typedef struct s_philo
-{
-	long			meals_swallowed;
-	long			last_meal;
-	pthread_t		th;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
-}					t_philo;
-
+typedef struct s_philo t_philo;
 typedef struct s_all_data
 {
-	int				index;
 	int				n_philo;
 	long			t_t_die;
 	long			t_t_eat;
@@ -31,3 +23,15 @@ typedef struct s_all_data
 	pthread_mutex_t	dead_lock;
 	t_philo			*philos;
 }					t_all_data;
+
+
+typedef struct s_philo
+{
+	long			meals_swallowed;
+	long			last_meal;
+	pthread_t		th;
+	int			
+		index;
+	t_all_data		*all_data;
+}					t_philo;
+
