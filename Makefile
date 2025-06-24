@@ -1,4 +1,4 @@
-SRC = philo_tests.c
+SRC = philo_tests.c ft_atoi.c
 OBJ = $(SRC:.o=.c)
 CC = cc
 FLAGS = -Wall -Werror -Wextra -fsanitize=thread
