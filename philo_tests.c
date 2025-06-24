@@ -50,6 +50,8 @@ void	*func1(void *arg)
 	i = 0;
 	while (1)
 	{
+		if (philo->all_data->lets_die == 1)
+			return (NULL);
 		printing_stuff(philo, "is thinking");
 		if (left % 2 == 0)
 		{
@@ -81,18 +83,22 @@ void	*func1(void *arg)
 void	*monitor_everything(void *arg)
 {
 	t_all_data	*all_data;
+	int			i;
 
 	all_data = (t_all_data *)arg;
-	int i = 0;
+	i = 0;
 	while (1)
 	{
 		if (i == all_data->n_philo)
 			i = 0;
-		if (all_data->t_t_die <= ft_get_time(all_data->philos) - all_data->philos[i].last_meal)
+		if (all_data->t_t_die <= ft_get_time(all_data->philos)
+			- all_data->philos[i].last_meal)
 		{
-				pthread_mutex_lock(&all_data->printing);
-			printf("dead cuz bad %lu > %lu \n",ft_get_time(all_data->philos) - all_data->philos[i].last_meal, all_data->t_t_die );
-			exit(0);
+			pthread_mutex_lock(&all_data->printing);
+			printf("dead cuz bad %lu > %lu \n", ft_get_time(all_data->philos)
+				- all_data->philos[i].last_meal, all_data->t_t_die);
+			all_data->lets_die = 1;
+			return (NULL);
 		}
 		i++;
 	}
@@ -131,6 +137,7 @@ void	init_everything(t_all_data *all_data)
 		i++;
 	}
 	i = 0;
+	all_data->lets_die = 0;
 	while (i < all_data->n_philo)
 	{
 		pthread_create(&all_data->philos[i].th, NULL, &func1,

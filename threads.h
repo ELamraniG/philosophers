@@ -15,6 +15,7 @@ typedef struct s_all_data
 	long				t_t_die;
 	long				t_t_eat;
 	long				t_t_sleep;
+	int					lets_die;
 	int					meals_to_drink;
 	long				start_time;
 	int					dead;
