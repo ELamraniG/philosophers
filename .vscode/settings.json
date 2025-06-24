@@ -59,6 +59,7 @@
   "files.associations": {
     "stdio.h": "c",
     "unistd.h": "c",
-    "threads.h": "c"
+    "threads.h": "c",
+    "ios": "c"
   }
 }

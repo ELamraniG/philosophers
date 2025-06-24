@@ -16,7 +16,6 @@ typedef struct s_all_data
 	long				t_t_eat;
 	long				t_t_sleep;
 	int					meals_to_drink;
-	long				start_timing;
 	long				start_time;
 	int					dead;
 	pthread_mutex_t		*forks;
@@ -33,3 +32,4 @@ typedef struct s_philo
 	int					index;
 	t_all_data			*all_data;
 }						t_philo;
+int						ft_atoi(const char *s);
