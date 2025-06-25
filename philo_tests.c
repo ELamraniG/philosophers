@@ -31,6 +31,12 @@ long	ft_get_time(t_philo *philo)
 void	printing_stuff(t_philo *philo, char *s)
 {
 	pthread_mutex_lock(&philo->all_data->printing);
+	if (philo->all_data->dead == 1)
+	{
+		printf("wtf\n\n");
+		pthread_mutex_unlock(&philo->all_data->printing);
+		return ;
+	}
 	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time) , philo->index + 1, s);
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
@@ -53,7 +59,7 @@ void	*func1(void *arg)
 		pthread_mutex_lock(&philo->all_data->last_lock);
 		if (philo->all_data->lets_die == 1)
 		{
-			printf(" dddeded %d\n", philo->all_data->lets_die);
+			// printf(" dddeded %d\n", philo->all_data->lets_die);
 			pthread_mutex_unlock(&philo->all_data->last_lock);
 			return (NULL);
 		}
@@ -105,7 +111,7 @@ void	*monitor_everything(void *arg)
 			- all_data->philos[i].last_meal)
 		{
 			
-			pthread_mutex_lock(&all_data->printing);
+			// pthread_mutex_lock(&all_data->printing);
 			pthread_mutex_lock(&all_data->last_lock);
 			printf("  %lu \n",ft_get_time(all_data->philos));
 			printf(" dead %lu - %lu >= %lu \n",ft_get_time(all_data->philos),all_data->philos[i].last_meal, ft_get_time(all_data->philos)
