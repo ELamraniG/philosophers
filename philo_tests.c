@@ -23,15 +23,15 @@ long	ft_get_time(t_philo *philo)
 {
 	struct timeval	tm;
 
+	philo = NULL;
 	gettimeofday(&tm, NULL);
-	return (tm.tv_sec * 1000 + tm.tv_usec / 1000)
-		- (philo->all_data->start_time);
+	return (tm.tv_sec * 1000 + tm.tv_usec / 1000);
 }
 
 void	printing_stuff(t_philo *philo, char *s)
 {
 	pthread_mutex_lock(&philo->all_data->printing);
-	printf("%lu %d %s\n", ft_get_time(philo), philo->index + 1, s);
+	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time) , philo->index + 1, s);
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
 
@@ -50,8 +50,14 @@ void	*func1(void *arg)
 	i = 0;
 	while (1)
 	{
+		pthread_mutex_lock(&philo->all_data->last_lock);
+		printf(" dd %d\n", philo->all_data->lets_die);
 		if (philo->all_data->lets_die == 1)
+		{
+			pthread_mutex_unlock(&philo->all_data->last_lock);
 			return (NULL);
+		}
+		pthread_mutex_unlock(&philo->all_data->last_lock);
 		printing_stuff(philo, "is thinking");
 		if (left % 2 == 0)
 		{
@@ -69,7 +75,11 @@ void	*func1(void *arg)
 		}
 		printing_stuff(philo, "is eating");
 		usleep(philo->all_data->t_t_eat);
+
+		pthread_mutex_lock(&philo->all_data->t_to_die_mutex);
 		philo->last_meal = ft_get_time(philo);
+		pthread_mutex_unlock(&philo->all_data->t_to_die_mutex);
+		printf("last meal = %lu\n", philo->last_meal);
 		pthread_mutex_unlock(&philo->all_data->forks[left]);
 		pthread_mutex_unlock(&philo->all_data->forks[right]);
 		printing_stuff(philo, "is sleeping");
@@ -91,15 +101,22 @@ void	*monitor_everything(void *arg)
 	{
 		if (i == all_data->n_philo)
 			i = 0;
+		pthread_mutex_lock(&all_data->t_to_die_mutex);
 		if (all_data->t_t_die <= ft_get_time(all_data->philos)
 			- all_data->philos[i].last_meal)
 		{
+			
 			pthread_mutex_lock(&all_data->printing);
-			printf("dead cuz bad %lu > %lu \n", ft_get_time(all_data->philos)
-				- all_data->philos[i].last_meal, all_data->t_t_die);
+			pthread_mutex_lock(&all_data->last_lock);
+			printf("  %lu \n",ft_get_time(all_data->philos));
+			printf(" dead %lu - %lu > %lu \n",ft_get_time(all_data->philos),all_data->philos[i].last_meal, ft_get_time(all_data->philos)
+				- all_data->philos[i].last_meal);
 			all_data->lets_die = 1;
+			pthread_mutex_unlock(&all_data->last_lock);
+			pthread_mutex_unlock(&all_data->t_to_die_mutex);
 			return (NULL);
 		}
+		pthread_mutex_unlock(&all_data->t_to_die_mutex);
 		i++;
 	}
 	return (NULL);
@@ -112,7 +129,8 @@ void	init_everything(t_all_data *all_data)
 
 	all_data->forks = malloc(sizeof(pthread_mutex_t) * all_data->n_philo);
 	pthread_mutex_init(&all_data->printing, NULL);
-	pthread_mutex_init(&all_data->dead_lock, NULL);
+	pthread_mutex_init(&all_data->t_to_die_mutex, NULL);
+	pthread_mutex_init(&all_data->last_lock, NULL);
 	i = 0;
 	while (i < all_data->n_philo)
 	{
@@ -133,7 +151,7 @@ void	init_everything(t_all_data *all_data)
 	i = 0;
 	while (i < all_data->n_philo)
 	{
-		all_data->philos[i].last_meal = 0;
+		all_data->philos[i].last_meal = all_data->start_time;
 		i++;
 	}
 	i = 0;

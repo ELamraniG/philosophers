@@ -1,20 +1,12 @@
-//init everything
-//check overflow with atoi
-//create the threads and mutexes
+
 
 
 //start simulation 
 {
-	//start time
-	//calculate time of sleep die stuff
-	//monitor loopi ela lfilo w chof wach last time to eat daz elih tran{time to die}
-	lock the printing and see if someone died first, if someone died then putstr
-	else continue the simulisation
-	function printi actions
-	check wach die wla la
+	fix the hanging problem
 }
 
 
-
+//free the mutexes and malloc stuff
 
 // when u push don't forget to make everything inside /philo directory

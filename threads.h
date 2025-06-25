@@ -21,7 +21,8 @@ typedef struct s_all_data
 	int					dead;
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		printing;
-	pthread_mutex_t		dead_lock;
+	pthread_mutex_t		t_to_die_mutex;
+	pthread_mutex_t		last_lock;
 	t_philo				*philos;
 }						t_all_data;
 
