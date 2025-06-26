@@ -27,8 +27,8 @@ int	free_boring(void)
 
 int	ft_atoi(const char *s)
 {
-	long	res;
-	int		i;
+	long res;
+	int i;
 
 	i = 0;
 	res = 0;

@@ -1,9 +1,10 @@
 #include "threads.h"
 
-void ft_usleep(t_philo *philo,int n)
+void	ft_usleep(t_philo *philo, int n)
 {
-	int i = 0;
+	int	i;
 
+	i = 0;
 	while (i < n * 20)
 	{
 		pthread_mutex_lock(&philo->all_data->last_lock);
@@ -52,12 +53,13 @@ void	printing_stuff(t_philo *philo, char *s)
 	pthread_mutex_lock(&philo->all_data->last_lock);
 	if (philo->all_data->lets_die == 1)
 	{
-			pthread_mutex_unlock(&philo->all_data->last_lock);
-			pthread_mutex_unlock(&philo->all_data->printing);
-			return ;
+		pthread_mutex_unlock(&philo->all_data->last_lock);
+		pthread_mutex_unlock(&philo->all_data->printing);
+		return ;
 	}
 	pthread_mutex_unlock(&philo->all_data->last_lock);
-	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time) , philo->index + 1, s);
+	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time),
+		philo->index + 1, s);
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
 
@@ -100,14 +102,13 @@ void	*func1(void *arg)
 		}
 		printing_stuff(philo, "is eating");
 		ft_usleep(philo, philo->all_data->t_t_eat);
-
 		pthread_mutex_lock(&philo->all_data->t_to_die_mutex);
 		philo->last_meal = ft_get_time(philo);
 		pthread_mutex_unlock(&philo->all_data->t_to_die_mutex);
 		pthread_mutex_unlock(&philo->all_data->forks[left]);
 		pthread_mutex_unlock(&philo->all_data->forks[right]);
 		printing_stuff(philo, "is sleeping");
-		ft_usleep(philo,philo->all_data->t_t_sleep);
+		ft_usleep(philo, philo->all_data->t_t_sleep);
 		i++;
 	}
 	return (NULL);
@@ -128,10 +129,11 @@ void	*monitor_everything(void *arg)
 		if (all_data->t_t_die <= ft_get_time(all_data->philos)
 			- all_data->philos[i].last_meal)
 		{
-			
 			// pthread_mutex_lock(&all_data->printing);
 			pthread_mutex_lock(&all_data->last_lock);
-			printf("%lu the philo %d is officialy dead rip my guy\n",ft_get_time(all_data->philos) - all_data->start_time ,all_data->philos[i].index + 1);
+			printf("%lu the philo %d is officialy dead rip my guy\n",
+				ft_get_time(all_data->philos) - all_data->start_time,
+				all_data->philos[i].index + 1);
 			all_data->lets_die = 1;
 			pthread_mutex_unlock(&all_data->last_lock);
 			pthread_mutex_unlock(&all_data->t_to_die_mutex);
