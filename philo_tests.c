@@ -1,5 +1,23 @@
 #include "threads.h"
 
+void ft_usleep(t_philo *philo,int n)
+{
+	int i = 0;
+
+	while (i < n * 20)
+	{
+		pthread_mutex_lock(&philo->all_data->last_lock);
+		if (philo->all_data->lets_die == 1)
+		{
+			pthread_mutex_unlock(&philo->all_data->last_lock);
+			return ;
+		}
+		pthread_mutex_unlock(&philo->all_data->last_lock);
+		usleep(50 * n);
+		i++;
+	}
+}
+
 int	check_data(int ac, char **av, t_all_data *philos)
 {
 	if (ac != 5 && ac != 6)
@@ -31,12 +49,14 @@ long	ft_get_time(t_philo *philo)
 void	printing_stuff(t_philo *philo, char *s)
 {
 	pthread_mutex_lock(&philo->all_data->printing);
-	if (philo->all_data->dead == 1)
+	pthread_mutex_lock(&philo->all_data->last_lock);
+	if (philo->all_data->lets_die == 1)
 	{
-		printf("wtf\n\n");
-		pthread_mutex_unlock(&philo->all_data->printing);
-		return ;
+			pthread_mutex_unlock(&philo->all_data->last_lock);
+			pthread_mutex_unlock(&philo->all_data->printing);
+			return ;
 	}
+	pthread_mutex_unlock(&philo->all_data->last_lock);
 	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time) , philo->index + 1, s);
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
@@ -59,7 +79,6 @@ void	*func1(void *arg)
 		pthread_mutex_lock(&philo->all_data->last_lock);
 		if (philo->all_data->lets_die == 1)
 		{
-			// printf(" dddeded %d\n", philo->all_data->lets_die);
 			pthread_mutex_unlock(&philo->all_data->last_lock);
 			return (NULL);
 		}
@@ -80,7 +99,7 @@ void	*func1(void *arg)
 			printing_stuff(philo, "has taken a fork");
 		}
 		printing_stuff(philo, "is eating");
-		usleep(philo->all_data->t_t_eat);
+		ft_usleep(philo, philo->all_data->t_t_eat);
 
 		pthread_mutex_lock(&philo->all_data->t_to_die_mutex);
 		philo->last_meal = ft_get_time(philo);
@@ -88,9 +107,8 @@ void	*func1(void *arg)
 		pthread_mutex_unlock(&philo->all_data->forks[left]);
 		pthread_mutex_unlock(&philo->all_data->forks[right]);
 		printing_stuff(philo, "is sleeping");
-		usleep(philo->all_data->t_t_sleep);
+		ft_usleep(philo,philo->all_data->t_t_sleep);
 		i++;
-		// usleep(1000);
 	}
 	return (NULL);
 }
@@ -113,9 +131,7 @@ void	*monitor_everything(void *arg)
 			
 			// pthread_mutex_lock(&all_data->printing);
 			pthread_mutex_lock(&all_data->last_lock);
-			printf("  %lu \n",ft_get_time(all_data->philos));
-			printf(" dead %lu - %lu >= %lu \n",ft_get_time(all_data->philos),all_data->philos[i].last_meal, ft_get_time(all_data->philos)
-				- all_data->philos[i].last_meal);
+			printf("%lu the philo %d is officialy dead rip my guy\n",ft_get_time(all_data->philos) - all_data->start_time ,all_data->philos[i].index + 1);
 			all_data->lets_die = 1;
 			pthread_mutex_unlock(&all_data->last_lock);
 			pthread_mutex_unlock(&all_data->t_to_die_mutex);
