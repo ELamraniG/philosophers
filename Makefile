@@ -1,7 +1,7 @@
-SRC = philo_tests.c ft_atoi.c
-OBJ = $(SRC:.o=.c)
+SRC = philo_test.c ft_atoi.c
+OBJ = $(SRC:.c=.o)
 CC = cc
-FLAGS = -Wall -Werror -Wextra -fsanitize=thread
+FLAGS = -Wall -Werror -Wextra
 NAME = philo
 
 
@@ -11,4 +11,10 @@ all : $(NAME)
 $(NAME) : $(OBJ)
 	$(CC) $(FLAGS) $(OBJ) -o $(NAME)
 %.o : %.c  threads.h
-	$(CC) $(FLAGS)  $< -o $@
+	$(CC) -c $(FLAGS)  $< -o $@
+
+clean : 
+	rm -f $(OBJ) 
+fclean : clean
+	rm -f $(NAME)
+re : fclean all
