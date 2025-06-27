@@ -139,7 +139,7 @@ void	*monitor_everything(void *arg)
 		}
 		pthread_mutex_unlock(&all_data->t_to_die_mutex);
 		pthread_mutex_unlock(&all_data->last_lock);
-		usleep(1000);
+		usleep(500);
 		i++;
 	}
 	return (NULL);
