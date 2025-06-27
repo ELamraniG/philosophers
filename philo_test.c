@@ -83,7 +83,7 @@ void	*func1(void *arg)
 		right = 0;
 	i = 0;
 	if (left % 2 == 0)
-		usleep( philo->all_data->t_t_eat / 2);
+		ft_usleep( philo->all_data->t_t_eat / 2);
 	while (1)
 	{
 		pthread_mutex_lock(&philo->all_data->t_to_die_mutex);
