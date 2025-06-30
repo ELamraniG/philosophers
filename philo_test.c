@@ -71,7 +71,7 @@ void	printing_stuff(t_philo *philo, char *s)
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
 
-void	*func1(void *arg)
+void	*philo_simu(void *arg)
 {
 	t_philo	*philo;
 	int		left;
@@ -136,15 +136,13 @@ void	*monitor_everything(void *arg)
 		curr_time = ft_get_time(all_data->philos);
 		if (all_data->t_t_die <= curr_time - all_data->philos[i].last_meal)
 		{
-			printf("%lu %lu  %d died\n", curr_time - all_data->start_time,
-				curr_time - all_data->philos[i].last_meal,
-				all_data->philos[i].index + 1);
+			printf("%lu %d %s\n", ft_get_time(&all_data->philos[i]) - (all_data->start_time),
+				all_data->philos->index + 1, "is dead");
 			all_data->lets_die = 1;
 			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
 			return (NULL);
 		}
-		pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 		if (all_data->philos[i].meals_eaten == all_data->meals_to_eat
 			&& !philos[i])
 		{
@@ -154,9 +152,11 @@ void	*monitor_everything(void *arg)
 		if (all_data->global_meals_eaten == all_data->n_philo)
 		{
 			all_data->lets_die = 1;
+			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
 			return (NULL);
 		}
+		pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 		pthread_mutex_unlock(&all_data->lets_die_mutex);
 		usleep(200);
 		i++;
@@ -197,7 +197,7 @@ void	init_everything(t_all_data *all_data, pthread_mutex_t *forks,
 	{
 		all_data->philos[i].last_meal = all_data->start_time;
 		all_data->philos[i].last_meal_mutex = last_meals[i];
-		pthread_create(&all_data->philos[i].th, NULL, &func1,
+		pthread_create(&all_data->philos[i].th, NULL, &philo_simu,
 			&all_data->philos[i]);
 		i++;
 	}
