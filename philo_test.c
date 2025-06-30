@@ -120,7 +120,7 @@ void	*monitor_everything(void *arg)
 	t_all_data	*all_data;
 	int			i;
 	long		curr_time;
-	int			philos[200];
+	int			philos[256];
 
 	all_data = (t_all_data *)arg;
 	i = 0;
@@ -137,7 +137,7 @@ void	*monitor_everything(void *arg)
 		if (all_data->t_t_die <= curr_time - all_data->philos[i].last_meal)
 		{
 			printf("%lu %d %s\n", ft_get_time(&all_data->philos[i]) - (all_data->start_time),
-				all_data->philos->index + 1, "is dead");
+				all_data->philos[i].index + 1, "is dead");
 			all_data->lets_die = 1;
 			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
@@ -146,8 +146,8 @@ void	*monitor_everything(void *arg)
 		if (all_data->philos[i].meals_eaten == all_data->meals_to_eat
 			&& !philos[i])
 		{
-			philos[i] = 1;
 			all_data->global_meals_eaten++;
+			philos[i] = 1;
 		}
 		if (all_data->global_meals_eaten == all_data->n_philo)
 		{
@@ -186,6 +186,7 @@ void	init_everything(t_all_data *all_data, pthread_mutex_t *forks,
 	while (i < all_data->n_philo)
 	{
 		all_data->philos[i].index = i;
+		all_data->philos[i].meals_eaten = 0;
 		all_data->philos[i].all_data = all_data;
 		i++;
 	}
