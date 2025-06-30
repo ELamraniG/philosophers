@@ -16,13 +16,13 @@ void	ft_usleep(t_philo *philo, int n)
 	curr = ft_get_time(philo);
 	while (1337)
 	{
-		pthread_mutex_lock(&philo->last_meal_mutex);
+		pthread_mutex_lock(&philo->all_data->lets_die_mutex);
 		if (philo->all_data->lets_die == 1)
 		{
-			pthread_mutex_unlock(&philo->last_meal_mutex);
+			pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 			return ;
 		}
-		pthread_mutex_unlock(&philo->last_meal_mutex);
+		pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 		usleep(200);
 		if (ft_get_time(philo) - curr >= n)
 			break ;
@@ -40,13 +40,13 @@ int	check_data(int ac, char **av, t_all_data *philos)
 	philos->t_t_die = ft_atoi(av[2]);
 	philos->t_t_eat = ft_atoi(av[3]);
 	philos->t_t_sleep = ft_atoi(av[4]);
-	philos->meals_to_drink = -2;
+	philos->meals_to_eat = -2;
 	if (ac == 6)
-		philos->meals_to_drink = ft_atoi(av[5]);
+		philos->meals_to_eat = ft_atoi(av[5]);
 	if (philos->n_philo == -1 || philos->t_t_die == -1)
 		return (-1);
 	if (philos->t_t_eat == -1 || philos->t_t_sleep == -1
-		|| philos->meals_to_drink == -1)
+		|| philos->meals_to_eat == -1)
 		return (-1);
 	if (philos->n_philo == 0)
 	{
@@ -66,9 +66,9 @@ void	printing_stuff(t_philo *philo, char *s)
 		pthread_mutex_unlock(&philo->all_data->printing);
 		return ;
 	}
-	pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time),
 		philo->index + 1, s);
+	pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 	pthread_mutex_unlock(&philo->all_data->printing);
 }
 
@@ -86,7 +86,7 @@ void	*func1(void *arg)
 		right = 0;
 	i = 0;
 	if (left % 2 == 0)
-		usleep(philo->all_data->t_t_eat / 2);
+		usleep(philo->all_data->t_t_eat / 2 * 1000);
 	while (1)
 	{
 		pthread_mutex_lock(&philo->all_data->lets_die_mutex);
@@ -104,7 +104,7 @@ void	*func1(void *arg)
 		printing_stuff(philo, "is eating");
 		ft_usleep(philo, philo->all_data->t_t_eat);
 		pthread_mutex_lock(&philo->last_meal_mutex);
-		philo->meals_swallowed++;
+		philo->meals_eaten++;
 		philo->last_meal = ft_get_time(philo);
 		pthread_mutex_unlock(&philo->last_meal_mutex);
 		pthread_mutex_unlock(&philo->all_data->forks[left]);
@@ -131,11 +131,20 @@ void	*monitor_everything(void *arg)
 		pthread_mutex_lock(&all_data->philos[i].last_meal_mutex);
 		pthread_mutex_lock(&all_data->lets_die_mutex);
 		curr_time = ft_get_time(all_data->philos);
-		if (all_data->t_t_die < curr_time - all_data->philos[i].last_meal)
+		if (all_data->t_t_die <= curr_time - all_data->philos[i].last_meal)
 		{
 			printf("%lu %lu  %d died\n", curr_time - all_data->start_time,
 				curr_time - all_data->philos[i].last_meal,
 				all_data->philos[i].index + 1);
+			all_data->lets_die = 1;
+			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
+			pthread_mutex_unlock(&all_data->lets_die_mutex);
+			return (NULL);
+		}
+		if (all_data->philos->meals_eaten == all_data->meals_to_eat)
+			all_data->global_meals_eaten++;
+		if (all_data->global_meals_eaten == all_data->meals_to_eat)
+		{
 			all_data->lets_die = 1;
 			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
@@ -155,6 +164,7 @@ void	init_everything(t_all_data *all_data,pthread_mutex_t *forks, pthread_mutex_
 	struct timeval	tm;
 
 	all_data->forks = forks;
+	all_data->global_meals_eaten = 0;
 	pthread_mutex_init(&all_data->printing, NULL);
 	pthread_mutex_init(&all_data->lets_die_mutex, NULL);
 	
