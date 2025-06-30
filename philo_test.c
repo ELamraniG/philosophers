@@ -118,17 +118,22 @@ void	*philo_simu(void *arg)
 void	*handle_one(void *arg)
 {
 	t_philo	*philo;
-	int		left;
 
 	philo = (t_philo *)arg;
-	left = philo->index;
 	printing_stuff(philo, "is thinking");
-	pthread_mutex_lock(&philo->all_data->forks[left]);
 	printing_stuff(philo, "has taken a fork");
-	ft_usleep(philo, philo->all_data->t_t_eat);
-	return (NULL);
+	while (1)
+	{
+		pthread_mutex_lock(&philo->all_data->lets_die_mutex);
+		if (philo->all_data->lets_die == 1)
+		{
+			pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
+			return (NULL);
+		}
+		pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
+		usleep(200);
+	}
 }
-
 void	*monitor_everything(void *arg)
 {
 	t_all_data	*all_data;
