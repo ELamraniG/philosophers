@@ -449,7 +449,6 @@ int	main(int ac, char **av)
 	while (i < all_data.n_philo)
 	{
 		pthread_mutex_destroy(&all_data.forks[i]);
-		pthread_mutex_destroy(&all_data.forks[i]);
 		pthread_mutex_destroy(&all_data.philos[i].last_meal_mutex);
 		i++;
 	}
