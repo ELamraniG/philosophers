@@ -48,9 +48,8 @@ int	check_data(int ac, char **av, t_all_data *philos)
 	if (philos->t_t_eat == -1 || philos->t_t_sleep == -1
 		|| philos->meals_to_eat == -1)
 		return (-1);
-	if (philos->n_philo == 0)
+	if (philos->n_philo == 0 || philos->n_philo > 200)
 	{
-		printf("no one ate anything :)\n");
 		return (-1);
 	}
 	return (0);
@@ -121,8 +120,12 @@ void	*monitor_everything(void *arg)
 	t_all_data	*all_data;
 	int			i;
 	long		curr_time;
+	int			philos[200];
 
 	all_data = (t_all_data *)arg;
+	i = 0;
+	while (i < all_data->n_philo)
+		philos[i++] = 0;
 	i = 0;
 	while (1)
 	{
@@ -141,24 +144,28 @@ void	*monitor_everything(void *arg)
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
 			return (NULL);
 		}
-		if (all_data->philos->meals_eaten == all_data->meals_to_eat)
+		pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
+		if (all_data->philos[i].meals_eaten == all_data->meals_to_eat
+			&& !philos[i])
+		{
+			philos[i] = 1;
 			all_data->global_meals_eaten++;
-		if (all_data->global_meals_eaten == all_data->meals_to_eat)
+		}
+		if (all_data->global_meals_eaten == all_data->n_philo)
 		{
 			all_data->lets_die = 1;
-			pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 			pthread_mutex_unlock(&all_data->lets_die_mutex);
 			return (NULL);
 		}
 		pthread_mutex_unlock(&all_data->lets_die_mutex);
-		pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
 		usleep(200);
 		i++;
 	}
 	return (NULL);
 }
 
-void	init_everything(t_all_data *all_data,pthread_mutex_t *forks, pthread_mutex_t *last_meals)
+void	init_everything(t_all_data *all_data, pthread_mutex_t *forks,
+		pthread_mutex_t *last_meals)
 {
 	int				i;
 	struct timeval	tm;
@@ -167,7 +174,6 @@ void	init_everything(t_all_data *all_data,pthread_mutex_t *forks, pthread_mutex_
 	all_data->global_meals_eaten = 0;
 	pthread_mutex_init(&all_data->printing, NULL);
 	pthread_mutex_init(&all_data->lets_die_mutex, NULL);
-	
 	all_data->lets_die = 0;
 	i = 0;
 	while (i < all_data->n_philo)
@@ -210,7 +216,7 @@ int	main(int ac, char **av)
 	all_data.philos = philos;
 	if (check_data(ac, av, &all_data) == -1)
 		return (1);
-	init_everything(&all_data, forks,last_meals);
+	init_everything(&all_data, forks, last_meals);
 	pthread_create(&monitor, NULL, &monitor_everything, &all_data);
 	while (i < all_data.n_philo)
 	{
