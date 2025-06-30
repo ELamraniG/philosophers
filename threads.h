@@ -21,13 +21,13 @@ typedef struct s_all_data
 	int					dead;
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		printing;
-	pthread_mutex_t		t_to_die_mutex;
-	pthread_mutex_t		last_lock;
+	pthread_mutex_t		lets_die_mutex;
 	t_philo				*philos;
 }						t_all_data;
 
 typedef struct s_philo
 {
+	pthread_mutex_t		last_meal_mutex;
 	long				meals_swallowed;
 	long				last_meal;
 	pthread_t			th;
