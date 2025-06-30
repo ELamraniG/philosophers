@@ -17,7 +17,7 @@ typedef struct s_all_data
 	long				t_t_sleep;
 	int					lets_die;
 	int					meals_to_eat;
-	int					global_meals_eaten;
+	long				global_meals_eaten;
 	long				start_time;
 	int					dead;
 	pthread_mutex_t		*forks;

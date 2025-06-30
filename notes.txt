@@ -10,4 +10,5 @@
 //free the mutexes and malloc stuff
 
 // when u push don't forget to make everything inside /philo directory
-// handle 1 
+// handle 1 philo
+clean everything
