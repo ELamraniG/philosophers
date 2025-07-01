@@ -1,14 +1,4 @@
-
-
-
-//start simulation 
-{
-	fix the hanging problem
-}
-
-
-//free the mutexes and malloc stuff
-
 // when u push don't forget to make everything inside /philo directory
-// handle 1 philo
-clean everything
+//atoi long
+
+understand simaphore

@@ -5,12 +5,14 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 typedef struct s_philo	t_philo;
 typedef struct s_all_data
 {
+	int					i;
 	int					n_philo;
 	long				t_t_die;
 	long				t_t_eat;
