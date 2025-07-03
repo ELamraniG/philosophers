@@ -4,8 +4,6 @@ CC = cc
 FLAGS = -Wall -Werror -Wextra
 NAME = philo_bonus
 
-
-
 all : $(NAME)
 
 $(NAME) : $(OBJ)
