@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/moel-amr/Desktop/1733/filos",
-      "program": "/Users/moel-amr/Desktop/1733/filos/build/Debug/outDebug"
+      "cwd": "/Users/moel-amr/Desktop/1733/filos/ philo_bonus",
+      "program": "/Users/moel-amr/Desktop/1733/filos/ philo_bonus/build/Debug/outDebug"
     }
   ]
 }
