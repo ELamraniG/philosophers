@@ -1,7 +1,7 @@
 SRC = philo_test.c ft_atoi.c
 OBJ = $(SRC:.c=.o)
 CC = cc
-FLAGS = -Wall -Werror -Wextra -fsanitize=thread
+FLAGS = -Wall -Werror -Wextra
 NAME = philo
 
 
