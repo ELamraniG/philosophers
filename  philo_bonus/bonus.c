@@ -8,26 +8,6 @@ long	ft_get_time(void)
 	return (tm.tv_sec * 1000 + tm.tv_usec / 1000);
 }
 
-// void	ft_usleep(t_philo *philo, int n)
-// {
-// 	long	curr;
-
-// 	curr = ft_get_time();
-// 	while (1337)
-// 	{
-// 		sem_wait(philo->all_data->lets_die_sem);
-// 		if (philo->all_data->lets_die == 1)
-// 		{
-// 			sem_post(philo->all_data->lets_die_sem);
-// 			return ;
-// 		}
-// 		sem_post(philo->all_data->lets_die_sem);
-// 		usleep(200);
-// 		if (ft_get_time() - curr >= n)
-// 			break ;
-// 	}
-// }
-
 int	check_data(int ac, char **av, t_all_data *philos)
 {
 	if (ac != 5 && ac != 6)
@@ -65,17 +45,19 @@ void	init_everything(t_all_data *all_data)
 	sem_unlink("/last_meal_sem");
 	sem_unlink("/printing_sem");
 	sem_unlink("/lets_die_sem");
+	sem_unlink("/meals_eaten_sem");
 	all_data->lets_die = 0;
 	all_data->forks_sem = sem_open("/forks_sem", O_CREAT, 0777,
 			all_data->n_philo);
 	all_data->printing_sem = sem_open("/printing_sem", O_CREAT, 0777, 1);
+	all_data->meals_eaten_sem = sem_open("/meals_eaten_sem", O_CREAT, 0777, 0);
 	all_data->lets_die_sem = sem_open("/lets_die_sem", O_CREAT, 0777, 1);
-	all_data->global_meals_eaten = 0;
 	i = 0;
 	while (i < all_data->n_philo)
 	{
 		s_n = ft_itoa(i + 1);
 		s = ft_strjoin("/last_meal_sem", s_n);
+		sem_unlink(s);
 		all_data->philos[i].last_meal_sem = sem_open(s, O_CREAT, 0777, 1);
 		free(s_n);
 		free(s);
@@ -111,11 +93,13 @@ void	*monitor_stuff(void *args)
 		sem_wait(philo->last_meal_sem);
 		if (philo->all_data->t_t_die <= ft_get_time() - philo->last_meal)
 		{
-			// printf("%lu %d %s\n", ft_get_time() - (philo->all_data->start_time),
-			// 	philo->index + 1, "died");
+			sem_wait(philo->all_data->printing_sem);
+			printf("%lu %d %s\n", ft_get_time() - (philo->all_data->start_time),
+				philo->index + 1, "died");
 			exit(1);
 		}
 		sem_post(philo->last_meal_sem);
+
 		usleep(200);
 	}
 }
@@ -137,6 +121,9 @@ void	do_the_philo(t_philo *philos)
 		usleep(philos->all_data->t_t_eat * 1000);
 		sem_wait(philos->last_meal_sem);
 		philos->last_meal = ft_get_time();
+		philos->meals_eaten++;
+		if (philos->meals_eaten == philos->all_data->meals_to_eat)
+			sem_post(philos->all_data->meals_eaten_sem);
 		sem_post(philos->last_meal_sem);
 		sem_post(philos->all_data->forks_sem);
 		sem_post(philos->all_data->forks_sem);
@@ -170,11 +157,13 @@ int	main(int ac, char **av)
 		i++;
 	}
 	i = 0;
-	if (wait(NULL))
+	
+	if (waitpid(all_pids[i],NULL,0))
 	{
 		while (i < all_data.n_philo)
 		{
 			kill(all_pids[i], SIGKILL);
+			waitpid(all_pids[i],NULL,0);
 			i++;
 		}
 	}

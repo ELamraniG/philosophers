@@ -14,13 +14,13 @@ typedef struct s_all_data
 	sem_t				*forks_sem;
 	sem_t				*printing_sem;
 	sem_t				*lets_die_sem;
+	sem_t				*meals_eaten_sem;
 	int					n_philo;
 	long				t_t_die;
 	long				t_t_eat;
 	long				t_t_sleep;
 	int					lets_die;
 	int					meals_to_eat;
-	long				global_meals_eaten;
 	long				start_time;
 	t_philo				*philos;
 }						t_all_data;
