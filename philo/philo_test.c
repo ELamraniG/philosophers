@@ -6,17 +6,17 @@
 /*   By: moel-amr <moel-amr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/01 20:16:52 by moel-amr          #+#    #+#             */
-/*   Updated: 2025/07/01 21:03:24 by moel-amr         ###   ########.fr       */
+/*   Updated: 2025/07/05 17:26:53 by moel-amr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "threads.h"
 
-long	ft_get_time(t_philo *philo)
+long	ft_get_time()
 {
 	struct timeval	tm;
 
-	philo = NULL;
+
 	gettimeofday(&tm, NULL);
 	return (tm.tv_sec * 1000 + tm.tv_usec / 1000);
 }
@@ -25,7 +25,7 @@ void	ft_usleep(t_philo *philo, int n)
 {
 	long	curr;
 
-	curr = ft_get_time(philo);
+	curr = ft_get_time();
 	while (1337)
 	{
 		pthread_mutex_lock(&philo->all_data->lets_die_mutex);
@@ -36,7 +36,7 @@ void	ft_usleep(t_philo *philo, int n)
 		}
 		pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 		usleep(200);
-		if (ft_get_time(philo) - curr >= n)
+		if (ft_get_time() - curr >= n)
 			break ;
 	}
 }
@@ -77,7 +77,7 @@ void	printing_stuff(t_philo *philo, char *s)
 		pthread_mutex_unlock(&philo->all_data->printing);
 		return ;
 	}
-	printf("%lu %d %s\n", ft_get_time(philo) - (philo->all_data->start_time),
+	printf("%lu %d %s\n", ft_get_time() - (philo->all_data->start_time),
 		philo->index + 1, s);
 	pthread_mutex_unlock(&philo->all_data->lets_die_mutex);
 	pthread_mutex_unlock(&philo->all_data->printing);
@@ -91,11 +91,11 @@ void	philo_simu_norm(t_philo *philo, int left, int right)
 	printing_stuff(philo, "has taken a fork");
 	pthread_mutex_lock(&philo->all_data->forks[right]);
 	printing_stuff(philo, "has taken a fork");
-	printing_stuff(philo, "is eating");
+	
 	ft_usleep(philo, philo->all_data->t_t_eat);
 	pthread_mutex_lock(&philo->last_meal_mutex);
 	philo->meals_eaten++;
-	philo->last_meal = ft_get_time(philo);
+	philo->last_meal = ft_get_time();
 	pthread_mutex_unlock(&philo->last_meal_mutex);
 	pthread_mutex_unlock(&philo->all_data->forks[left]);
 	pthread_mutex_unlock(&philo->all_data->forks[right]);
@@ -153,12 +153,12 @@ int	death_checking(t_all_data *all_data, int i)
 {
 	long	curr_time;
 
-	curr_time = ft_get_time(all_data->philos);
+	curr_time = ft_get_time();
 	pthread_mutex_lock(&all_data->philos[i].last_meal_mutex);
 	pthread_mutex_lock(&all_data->lets_die_mutex);
 	if (all_data->t_t_die <= curr_time - all_data->philos[i].last_meal)
 	{
-		printf("%lu %d %s\n", ft_get_time(&all_data->philos[i])
+		printf("%lu %d %s\n", ft_get_time()
 			- (all_data->start_time), all_data->philos[i].index + 1, "died");
 		all_data->lets_die = 1;
 		pthread_mutex_unlock(&all_data->philos[i].last_meal_mutex);
