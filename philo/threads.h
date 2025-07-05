@@ -1,6 +1,5 @@
 #ifndef THREADS_H
 # define THREADS_H
-#endif
 
 #include <pthread.h>
 #include <stdio.h>
@@ -21,7 +20,6 @@ typedef struct s_all_data
 	int					meals_to_eat;
 	long				global_meals_eaten;
 	long				start_time;
-	int					dead;
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		printing;
 	pthread_mutex_t		lets_die_mutex;
@@ -38,3 +36,4 @@ typedef struct s_philo
 	t_all_data			*all_data;
 }						t_philo;
 int						ft_atoi(const char *s);
+#endif
