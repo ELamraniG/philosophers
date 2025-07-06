@@ -1,91 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   bonus.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: moel-amr <moel-amr@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/06 17:53:18 by moel-amr          #+#    #+#             */
+/*   Updated: 2025/07/06 18:02:23 by moel-amr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "threads.h"
 
-long	ft_get_time(void)
-{
-	struct timeval	tm;
-
-	gettimeofday(&tm, NULL);
-	return (tm.tv_sec * 1000 + tm.tv_usec / 1000);
-}
-
-int	check_data(int ac, char **av, t_all_data *philos)
-{
-	if (ac != 5 && ac != 6)
-	{
-		printf("error in the number of args\n");
-		return (-1);
-	}
-	philos->n_philo = ft_atoi(av[1]);
-	philos->t_t_die = ft_atoi(av[2]);
-	philos->t_t_eat = ft_atoi(av[3]);
-	philos->t_t_sleep = ft_atoi(av[4]);
-	philos->meals_to_eat = -2;
-	if (ac == 6)
-		philos->meals_to_eat = ft_atoi(av[5]);
-	if (philos->n_philo == -1 || philos->t_t_die == -1)
-		return (-1);
-	if (philos->t_t_eat == -1 || philos->t_t_sleep == -1
-		|| philos->meals_to_eat == -1)
-		return (-1);
-	if (philos->n_philo == 0 || philos->n_philo > 200)
-	{
-		return (-1);
-	}
-	return (0);
-}
-
-void	init_everything(t_all_data *all_data)
-{
-	int		i;
-	char	*s;
-	char	*s_n;
-
-	s_n = NULL;
-	sem_unlink("/forks_sem");
-	sem_unlink("/last_meal_sem");
-	sem_unlink("/printing_sem");
-	sem_unlink("/lets_die_sem");
-	sem_unlink("/meals_eaten_sem");
-	all_data->lets_die = 0;
-	all_data->forks_sem = sem_open("/forks_sem", O_CREAT, 0777,
-			all_data->n_philo);
-	all_data->printing_sem = sem_open("/printing_sem", O_CREAT, 0777, 1);
-	all_data->meals_eaten_sem = sem_open("/meals_eaten_sem", O_CREAT, 0777, 0);
-	all_data->lets_die_sem = sem_open("/lets_die_sem", O_CREAT, 0777, 1);
-	i = 0;
-	while (i < all_data->n_philo)
-	{
-		s_n = ft_itoa(i + 1);
-		s = ft_strjoin("/last_meal_sem", s_n);
-		sem_unlink(s);
-		all_data->philos[i].last_meal_sem = sem_open(s, O_CREAT, 0777, 1);
-		free(s_n);
-		free(s);
-		all_data->philos[i].index = i;
-		all_data->philos[i].meals_eaten = 0;
-		all_data->philos[i].all_data = all_data;
-		i++;
-	}
-}
-
-void	printing_stuff(t_philo *philo, char *s)
-{
-	sem_wait(philo->all_data->printing_sem);
-	sem_wait(philo->all_data->lets_die_sem);
-	if (philo->all_data->lets_die == 1)
-	{
-		sem_post(philo->all_data->printing_sem);
-		sem_post(philo->all_data->lets_die_sem);
-		return ;
-	}
-	printf("%lu %d %s\n", ft_get_time() - (philo->all_data->start_time),
-		philo->index + 1, s);
-	sem_post(philo->all_data->printing_sem);
-	sem_post(philo->all_data->lets_die_sem);
-}
 void	*monitor_stuff(void *args)
 {
 	t_philo	*philo;
+	int		i;
 
 	philo = (t_philo *)args;
 	while (1)
@@ -96,10 +26,16 @@ void	*monitor_stuff(void *args)
 			sem_wait(philo->all_data->printing_sem);
 			printf("%lu %d %s\n", ft_get_time() - (philo->all_data->start_time),
 				philo->index + 1, "died");
-			exit(1);
+			i = 0;
+			while (i < philo->all_data->n_philo)
+			{
+				sem_post(philo->all_data->meals_eaten_sem);
+				i++;
+			}
 		}
+		if (philo->meals_eaten == philo->all_data->meals_to_eat)
+			sem_post(philo->all_data->meals_eaten_sem);
 		sem_post(philo->last_meal_sem);
-
 		usleep(200);
 	}
 }
@@ -122,8 +58,6 @@ void	do_the_philo(t_philo *philos)
 		sem_wait(philos->last_meal_sem);
 		philos->last_meal = ft_get_time();
 		philos->meals_eaten++;
-		if (philos->meals_eaten == philos->all_data->meals_to_eat)
-			sem_post(philos->all_data->meals_eaten_sem);
 		sem_post(philos->last_meal_sem);
 		sem_post(philos->all_data->forks_sem);
 		sem_post(philos->all_data->forks_sem);
@@ -132,16 +66,41 @@ void	do_the_philo(t_philo *philos)
 	}
 	return ;
 }
+
+void	clean_exit(t_all_data *all_data, int *all_pids)
+{
+	int	i;
+
+	i = 0;
+	while (i < all_data->n_philo)
+	{
+		sem_wait(all_data->meals_eaten_sem);
+		i++;
+	}
+	i = 0;
+	while (i < all_data->n_philo)
+	{
+		kill(all_pids[i], SIGKILL);
+		waitpid(all_pids[i], NULL, 0);
+		sem_close(all_data->philos[i].last_meal_sem);
+		i++;
+	}
+	sem_close(all_data->forks_sem);
+	sem_close(all_data->printing_sem);
+	sem_close(all_data->meals_eaten_sem);
+}
 int	main(int ac, char **av)
 {
-	t_philo philos[256];
-	t_all_data all_data;
+	t_philo		philos[256];
+	t_all_data	all_data;
+	int			all_pids[201];
+	int			i;
+
 	all_data.philos = philos;
-	int all_pids[201];
 	if (check_data(ac, av, &all_data) == -1)
 		return (0);
 	init_everything(&all_data);
-	int i = 0;
+	i = 0;
 	all_data.start_time = ft_get_time();
 	while (i < all_data.n_philo)
 		philos[i++].last_meal = all_data.start_time;
@@ -150,21 +109,9 @@ int	main(int ac, char **av)
 	{
 		all_pids[i] = fork();
 		if (all_pids[i] == 0)
-		{
 			do_the_philo(&philos[i]);
-			return (0);
-		}
 		i++;
 	}
-	i = 0;
-	
-	if (waitpid(all_pids[i],NULL,0))
-	{
-		while (i < all_data.n_philo)
-		{
-			kill(all_pids[i], SIGKILL);
-			waitpid(all_pids[i],NULL,0);
-			i++;
-		}
-	}
+	clean_exit(&all_data, all_pids);
+	return (0);
 }

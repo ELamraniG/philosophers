@@ -1,7 +1,7 @@
-SRC = bonus.c ft_atoi.c ft_strjoin.c ft_itoa.c
+SRC = bonus.c ft_atoi.c ft_strjoin.c ft_itoa.c data_init.c utils.c
 OBJ = $(SRC:.c=.o)
 CC = cc
-FLAGS = #-Wall -Werror -Wextra
+FLAGS = -Wall -Werror -Wextra
 NAME = philo_bonus
 
 all : $(NAME)
