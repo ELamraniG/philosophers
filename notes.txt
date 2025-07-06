@@ -1,5 +1,5 @@
 // when u push don't forget to make everything inside /philo directory
 add exit clean up
 //atoi long
-
+handle 1
 understand simaphore
