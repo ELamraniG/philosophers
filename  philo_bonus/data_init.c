@@ -6,7 +6,7 @@
 /*   By: moel-amr <moel-amr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/06 17:48:59 by moel-amr          #+#    #+#             */
-/*   Updated: 2025/07/06 18:06:48 by moel-amr         ###   ########.fr       */
+/*   Updated: 2025/07/06 18:08:21 by moel-amr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,6 @@ int	check_data(int ac, char **av, t_all_data *all_data)
 		return (-1);
 	if (all_data->n_philo == 0 || all_data->n_philo > 200)
 		return (-1);
-	// if (all_data->n_philo == 1)
-	// {
-	// 	all_data->start_time = ft_get_time();
-	// 	do_one_philo(all_data);
-	// }
 	return (0);
 }
 
